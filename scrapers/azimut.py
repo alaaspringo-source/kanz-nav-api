@@ -3,7 +3,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-API_URL = "https://api.azimut.eg/api/list/funds"
+# api.azimut.eg TLS-rejects connections from datacenter/cloud IP ranges
+# (confirmed: TLSV1_UNRECOGNIZED_NAME at the handshake, consistent across
+# GitHub Actions runners). app.azimut.eg serves the same fund list data and
+# is not blocked — use this instead.
+API_URL = "https://app.azimut.eg/api/fund/list?size=100&web=true"
 
 HEADERS = {
     "User-Agent": (
@@ -12,7 +16,6 @@ HEADERS = {
         "Chrome/124.0.0.0 Safari/537.36"
     ),
     "Referer": "https://azimut.eg/",
-    "Origin": "https://azimut.eg",
 }
 
 FUND_MAP = {
@@ -39,11 +42,11 @@ FUND_MAP = {
     "Ataa Charity Fund": "ATAA",
     "Maashy": "MAASHY",
     "Bank Nxt - Sanady": "SANADY",
+    "az- فاليو": "AZ_FALYO",
 }
 
 
 def scrape() -> list[dict]:
-    """Fetch all Azimut funds from the official API endpoint. No key needed."""
     try:
         response = requests.get(API_URL, headers=HEADERS, timeout=30)
         if response.status_code != 200:
@@ -51,12 +54,12 @@ def scrape() -> list[dict]:
             return []
 
         data = response.json()
-        funds = data.get("data", [])
+        funds = data.get("response", {}).get("funds", {}).get("dataList", [])
         logger.info(f"Azimut: API returned {len(funds)} funds.")
 
         results = []
         for fund in funds:
-            name = fund.get("name", "").strip()
+            name = (fund.get("name") or "").strip()
             last_nav = fund.get("last_nav") or {}
             nav = last_nav.get("nav")
             date = last_nav.get("date", "N/A")
