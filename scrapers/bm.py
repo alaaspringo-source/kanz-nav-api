@@ -13,7 +13,7 @@ HEADERS = {
     ),
 }
 
-FUND_MAP = {
+FUND_MAP_RAW = {
     "Banque Misr First Mutual Fund - First Issue - Quarterly periodic income": ("BM_FIRST", "صندوق بنك مصر الأول - الإصدار الأول - دخل دوري ربع سنوي"),
     "Banque Misr Mutual Fund - Second Issue - Capital growth": ("BM_SECOND", "صندوق بنك مصر - الإصدار الثاني - نمو رأسمالي"),
     "Banque Misr Capital Guaranteed Fund (Sandouk El Umr)": ("BM_UMR", "صندوق بنك مصر لضمان رأس المال (صندوق العمر)"),
@@ -27,6 +27,11 @@ FUND_MAP = {
     "CI Asset Fund with Cumulative Daily Yield - Misr Daily": ("CI_MISR_DAILY", "صندوق سي آي ذو العائد اليومي التراكمي (مصر اليومي)"),
     "CI Asset Management Investment Fund for Investment in Gold with Daily Cumulative Return - Gold Misr": ("CI_GOLD_MISR", "صندوق سي آي للاستثمار في الذهب ذو العائد اليومي التراكمي (جولد مصر)"),
 }
+def _norm(s: str) -> str:
+    return s.replace("’", "'").replace("‘", "'").strip()
+
+
+FUND_MAP = {_norm(k): v for k, v in FUND_MAP_RAW.items()}
 
 
 def scrape() -> list[dict]:
@@ -59,7 +64,7 @@ def scrape() -> list[dict]:
                 continue
 
             currency = "USD" if "Dollar" in price_raw else "EUR" if "Euro" in price_raw else "EGP"
-            ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
+            ticker, name_ar = FUND_MAP.get(_norm(name), ("UNC", None))
 
             results.append({
                 "ticker": ticker,

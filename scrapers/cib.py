@@ -22,14 +22,18 @@ FUND_MAP = {
     "Hemaya Fund":           ("CIB_HEMAYA",  "حماية"),
     "Thabat Fund":           ("CIB_THABAT",  "ثبات"),
     "Misr Almustaqbal Fund": ("CIB_MST",     "مصر المستقبل"),
+    "Misr ElMostakbal Fund": ("CIB_MST",     "مصر المستقبل"),
     "Takamel Fund":          ("CIB_TAK",     "تكامل"),
+    "Takamol Fund":          ("CIB_TAK",     "تكامل"),
     "Osoul":                 ("CIB_OSSOUL",  "صندوق أصول"),
     "Istethmar":             ("CIB_IST",     "إستثمار"),
     "Aman":                  ("CIB_AMAN",    "أمان"),
     "Hemaya":                ("CIB_HEMAYA",  "حماية"),
     "Thabat":                ("CIB_THABAT",  "ثبات"),
     "Misr Almustaqbal":      ("CIB_MST",     "مصر المستقبل"),
+    "Misr ElMostakbal":      ("CIB_MST",     "مصر المستقبل"),
     "Takamel":               ("CIB_TAK",     "تكامل"),
+    "Takamol":               ("CIB_TAK",     "تكامل"),
 }
 
 

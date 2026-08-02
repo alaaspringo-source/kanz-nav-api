@@ -44,6 +44,13 @@ FUND_MAP = {
 SKIP_NAMES = {"fund name", ""}
 
 
+def _norm(s: str) -> str:
+    return s.replace("\u2019", "'").replace("\u2018", "'").replace('\u201c', '"').replace('\u201d', '"').strip()
+
+
+FUND_MAP = {_norm(k): v for k, v in FUND_MAP.items()}
+
+
 def scrape() -> list[dict]:
     html = fetch_rendered_html(URL, wait_ms=8000)
     if not html:
@@ -86,7 +93,7 @@ def scrape() -> list[dict]:
         date_val = date_els[0].get_text(strip=True) if date_els else "N/A"
 
         currency = "USD" if "USD" in name.upper() else "EGP"
-        ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
+        ticker, name_ar = FUND_MAP.get(_norm(name), ("UNC", None))
 
         results.append({
             "ticker": ticker,

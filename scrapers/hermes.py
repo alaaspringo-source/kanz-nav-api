@@ -13,13 +13,14 @@ HEADERS = {
     ),
 }
 
-FUND_MAP = {
+FUND_MAP_RAW = {
     "Bank of Alexandria Mutual Fund No. 1": ("ALEX_1", "صندوق بنك الإسكندرية الأول"),
     "Credit Agricole Mutual Fund No. 1": ("CA_1", "صندوق كريدي أجريكول الأول"),
     "Credit Agricole Mutual Fund No. 2": ("CA_2", "صندوق كريدي أجريكول الثاني"),
     "Banque du Caire Mutual Fund No. 1": ("CAIRE_1", "صندوق بنك القاهرة الأول"),
     "Egyptian Gulf Bank Mutual Fund": ("EGB_1", "صندوق بنك المصري الخليجي"),
     "SAIB's Second Investment Fund": ("SAIB_2", "صندوق بنك التنمية الصناعية الثاني"),
+    "SAIB's Third Investment Fund (El Rabeh)": ("SAIB_3", "صندوق بنك التنمية الصناعية الثالث (الرابح)"),
     "EFG Hermes Equity Fund": ("EFG_EQ", "صندوق إي إف چي هيرميس للأسهم"),
     "KFH-Alpha-Shariaa Compliant Equity Fund": ("KFH_ALPHA", "صندوق بيت التمويل الكويتي ألفا الشرعي"),
     "Al Baraka Bank Islamic Fund": ("ALBARAKA_EQ", "صندوق بنك البركة الإسلامي"),
@@ -52,6 +53,13 @@ SKIP_NAMES = {
 }
 
 
+def _norm(s: str) -> str:
+    return s.replace("’", "'").replace("‘", "'").strip()
+
+
+FUND_MAP = {_norm(k): v for k, v in FUND_MAP_RAW.items()}
+
+
 def scrape() -> list[dict]:
     url = "https://efgholding.com/en/our-services/mutual-funds"
     try:
@@ -79,7 +87,7 @@ def scrape() -> list[dict]:
 
             date_val = cols[4].get_text(strip=True) if len(cols) > 4 else "N/A"
             currency = "USD" if "USD" in name.upper() else "EGP"
-            ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
+            ticker, name_ar = FUND_MAP.get(_norm(name), ("UNC", None))
 
             results.append({
                 "ticker": ticker,

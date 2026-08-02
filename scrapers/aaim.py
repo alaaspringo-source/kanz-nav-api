@@ -42,6 +42,8 @@ def scrape() -> list[dict]:
 
     for card in fund_cards:
         text = card.get_text(strip=True)
+        if "coming soon" in text.lower() or "coming-soon" in card.get("href", "").lower():
+            continue  # placeholder fund, no real NAV yet
 
         m_nav = re.search(r"([\d,]+\.?\d*)\s*(EGP|USD)", text)
         if not m_nav:

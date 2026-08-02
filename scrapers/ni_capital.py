@@ -69,13 +69,17 @@ def scrape() -> list[dict]:
                 candidate = lines[j]
                 if candidate == date_val:
                     continue
+                if candidate == "Certificate Price":
+                    continue
                 if re.match(r"^\d", candidate):
+                    continue
+                if re.match(r"^(EGP|USD)?\s*[\d.]+$", candidate):
                     continue
                 if len(candidate) > 3 and not candidate.startswith("http"):
                     name = candidate
                     break
 
-            if not name or nav <= 0:
+            if not name or name == "Certificate Price" or nav <= 0:
                 continue
 
             ticker, name_ar = FUND_MAP.get(name, ("UNC", None))

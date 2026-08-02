@@ -15,7 +15,12 @@ HEADERS = {
 
 URL = "https://www.hc-si.com/"
 
-FUND_MAP = {
+
+def _norm(s: str) -> str:
+    return s.replace("\u2019", "'").replace("\u2018", "'").strip()
+
+
+FUND_MAP_RAW = {
     "Suez Canal Bank Fund No. 1": ("HC_SCB_1", "صندوق بنك قناة السويس الأول"),
     "Agricultural Bank of Egypt Fund No. 2 (Al Hasad Al Yaumy)": ("HC_ABE_2", "صندوق البنك الزراعي المصري الثاني (الحصاد اليومي)"),
     "QNB (Tadawol)": ("HC_QNB_TADAWOL", "صندوق QNB (تداول)"),
@@ -24,6 +29,7 @@ FUND_MAP = {
     "FAB Misr (Al Awal) Daily Cumulative Return Fund for Liquidity": ("HC_FAB_ALAWAL", "صندوق بنك أبوظبي الأول مصر (الأول) للعائد اليومي التراكمي"),
     "FAB Misr (Etm'nan) Capital Preservation Fund": ("HC_FAB_ETMNAN", "صندوق بنك أبوظبي الأول مصر (اطمئنان) للحفاظ على رأس المال"),
 }
+FUND_MAP = {_norm(k): v for k, v in FUND_MAP_RAW.items()}
 
 
 def scrape() -> list[dict]:
@@ -56,7 +62,7 @@ def scrape() -> list[dict]:
 
             date_span = row.find("span", class_="date")
             date_val = date_span.get_text(strip=True) if date_span else "N/A"
-            ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
+            ticker, name_ar = FUND_MAP.get(_norm(name), ("UNC", None))
 
             results.append({
                 "ticker": ticker,
