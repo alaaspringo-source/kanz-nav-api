@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-from scrapers import aaim, afim, azimut, beltone, bm, ci_capital, cib, hermes
+from scrapers import aaim, afim, azimut, beltone, bm, ci_capital, cib, hermes, hc_securities, ni_capital, misr_capital
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,6 +40,9 @@ def get_all_navs() -> list[dict]:
         ("AFIM", afim.scrape),
         ("AAIM", aaim.scrape),
         ("CI Capital", ci_capital.scrape),
+        ("HC Securities", hc_securities.scrape),
+        ("NI Capital", ni_capital.scrape),
+        ("Misr Capital", misr_capital.scrape),
     ]
 
     for name, fn in scrapers:
