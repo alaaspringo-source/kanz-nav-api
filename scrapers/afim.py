@@ -1,19 +1,13 @@
-import requests
 from bs4 import BeautifulSoup
 import logging
 import re
 
+from scrapers._render import fetch_rendered_html
+
 logger = logging.getLogger(__name__)
 
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
-}
+URL = "https://www.afim.com.eg/public/investment"
 
-# AR name (as shown on site) -> (ticker, EN display name)
 FUND_MAP = {
     "صندوق الواعد": ("AFIM_ELWAED", "El Waed - Fixed Income"),
     "صندوق حورس": ("AFIM_HOURAS", "Houras - Money Market"),
@@ -32,49 +26,42 @@ FUND_MAP = {
 
 
 def scrape() -> list[dict]:
-    url = "https://www.afim.com.eg/public/investment"
+    # No stable selector to wait on before the challenge page swaps to real
+    # content, so use the fixed-wait fallback (page JS-reloads at ~5s).
+    html = fetch_rendered_html(URL, wait_ms=12000)
+    if not html:
+        return []
+
+    soup = BeautifulSoup(html, "html.parser")
     results = []
 
-    try:
-        response = requests.get(url, headers=HEADERS, timeout=20)
-        if response.status_code != 200:
-            logger.error(f"AFIM: HTTP {response.status_code}")
-            return []
+    for a in soup.find_all("a"):
+        text = a.get_text(" ", strip=True)
+        m = re.search(r"سعر الوثيقة:\s*([\d.]+)\s*جنيه", text)
+        if not m:
+            continue
 
-        soup = BeautifulSoup(response.text, "html.parser")
+        nav = float(m.group(1))
+        name_ar = text.split("اقرأ المزيد")[0].strip()
+        if not name_ar:
+            continue
 
-        # Fund cards are single <a> tags containing name + "سعر الوثيقة: X جنيه"
-        for a in soup.find_all("a"):
-            text = a.get_text(" ", strip=True)
-            m = re.search(r"سعر الوثيقة:\s*([\d.]+)\s*جنيه", text)
-            if not m:
-                continue
+        ticker, name_en = ("UNC", name_ar)
+        for key, (t, en) in FUND_MAP.items():
+            if key in name_ar:
+                ticker, name_en = t, en
+                break
 
-            nav = float(m.group(1))
-            name_ar = text.split("اقرأ المزيد")[0].strip()
-            if not name_ar:
-                continue
+        results.append({
+            "ticker": ticker,
+            "name_en": name_en,
+            "name_ar": name_ar,
+            "nav": nav,
+            "currency": "EGP",
+            "date": "N/A",
+            "manager": "AFIM",
+            "source": "afim.com.eg",
+        })
 
-            ticker, name_en = ("UNC", name_ar)
-            for key, (t, en) in FUND_MAP.items():
-                if key in name_ar:
-                    ticker, name_en = t, en
-                    break
-
-            results.append({
-                "ticker": ticker,
-                "name_en": name_en,
-                "name_ar": name_ar,
-                "nav": nav,
-                "currency": "EGP",
-                "date": "N/A",
-                "manager": "AFIM",
-                "source": "afim.com.eg",
-            })
-
-        logger.info(f"AFIM: Scraped {len(results)} funds.")
-
-    except Exception as e:
-        logger.error(f"AFIM: Critical error — {e}")
-
+    logger.info(f"AFIM: Scraped {len(results)} funds.")
     return results
