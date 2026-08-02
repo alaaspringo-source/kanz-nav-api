@@ -16,13 +16,13 @@ HEADERS = {
 URL = "https://www.hc-si.com/"
 
 FUND_MAP = {
-    "Suez Canal Bank Fund No. 1": "HC_SCB_1",
-    "Agricultural Bank of Egypt Fund No. 2 (Al Hasad Al Yaumy)": "HC_ABE_2",
-    "QNB (Tadawol)": "HC_QNB_TADAWOL",
-    "Misr Al Mostakbal Company Investment Fund": "HC_MISR_MOSTAKBAL",
-    "Credit Agricole Bank Egypt Balanced Fund No. 4": "HC_CAE_4",
-    "FAB Misr (Al Awal) Daily Cumulative Return Fund for Liquidity": "HC_FAB_ALAWAL",
-    "FAB Misr (Etm'nan) Capital Preservation Fund": "HC_FAB_ETMNAN",
+    "Suez Canal Bank Fund No. 1": ("HC_SCB_1", "صندوق بنك قناة السويس الأول"),
+    "Agricultural Bank of Egypt Fund No. 2 (Al Hasad Al Yaumy)": ("HC_ABE_2", "صندوق البنك الزراعي المصري الثاني (الحصاد اليومي)"),
+    "QNB (Tadawol)": ("HC_QNB_TADAWOL", "صندوق QNB (تداول)"),
+    "Misr Al Mostakbal Company Investment Fund": ("HC_MISR_MOSTAKBAL", "صندوق شركة مصر المستقبل للاستثمار"),
+    "Credit Agricole Bank Egypt Balanced Fund No. 4": ("HC_CAE_4", "صندوق كريدي أجريكول مصر المتوازن الرابع"),
+    "FAB Misr (Al Awal) Daily Cumulative Return Fund for Liquidity": ("HC_FAB_ALAWAL", "صندوق بنك أبوظبي الأول مصر (الأول) للعائد اليومي التراكمي"),
+    "FAB Misr (Etm'nan) Capital Preservation Fund": ("HC_FAB_ETMNAN", "صندوق بنك أبوظبي الأول مصر (اطمئنان) للحفاظ على رأس المال"),
 }
 
 
@@ -56,11 +56,12 @@ def scrape() -> list[dict]:
 
             date_span = row.find("span", class_="date")
             date_val = date_span.get_text(strip=True) if date_span else "N/A"
+            ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
 
             results.append({
-                "ticker": FUND_MAP.get(name, "UNC"),
+                "ticker": ticker,
                 "name_en": name,
-                "name_ar": None,
+                "name_ar": name_ar,
                 "nav": nav,
                 "currency": "EGP",
                 "date": date_val,

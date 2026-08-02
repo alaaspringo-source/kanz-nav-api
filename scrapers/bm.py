@@ -14,18 +14,18 @@ HEADERS = {
 }
 
 FUND_MAP = {
-    "Banque Misr First Mutual Fund - First Issue - Quarterly periodic income": "BM_FIRST",
-    "Banque Misr Mutual Fund - Second Issue - Capital growth": "BM_SECOND",
-    "Banque Misr Capital Guaranteed Fund (Sandouk El Umr)": "BM_UMR",
-    "Banque Misr Mutual Fund in Egyptian Pounds with a daily cumulative return (day by day)": "BM_MM_EGP",
-    'Banque Misr Fund IV "In accordance with provisions of Islamic Sharia Law" (EL Hessn)': "BM_HOSN",
-    "Banque Misr's third Mutual fund with cumulative return and periodic distribution": "BM_THIRD",
-    "Banque Misr Mutual Fund in Dollar with a daily cumulative return (day by day Dollar)": "BM_MM_USD",
-    "Banque Misr Mutual Fund in Euro with a daily cumulative return (day by day Euro)": "BM_MM_EUR",
-    "Misr Capital Investment Fund to invest in debt instruments with periodic returns": "MISR_CAP_DEBT",
-    "Egyptian Sports Fund": "EGYPT_SPORT_BM",
-    "CI Asset Fund with Cumulative Daily Yield - Misr Daily": "CI_MISR_DAILY",
-    "CI Asset Management Investment Fund for Investment in Gold with Daily Cumulative Return - Gold Misr": "CI_GOLD_MISR",
+    "Banque Misr First Mutual Fund - First Issue - Quarterly periodic income": ("BM_FIRST", "صندوق بنك مصر الأول - الإصدار الأول - دخل دوري ربع سنوي"),
+    "Banque Misr Mutual Fund - Second Issue - Capital growth": ("BM_SECOND", "صندوق بنك مصر - الإصدار الثاني - نمو رأسمالي"),
+    "Banque Misr Capital Guaranteed Fund (Sandouk El Umr)": ("BM_UMR", "صندوق بنك مصر لضمان رأس المال (صندوق العمر)"),
+    "Banque Misr Mutual Fund in Egyptian Pounds with a daily cumulative return (day by day)": ("BM_MM_EGP", "صندوق بنك مصر بالجنيه المصري ذو العائد اليومي التراكمي (يوم بيوم)"),
+    'Banque Misr Fund IV "In accordance with provisions of Islamic Sharia Law" (EL Hessn)': ("BM_HOSN", "صندوق بنك مصر الرابع (الحصن) المتوافق مع الشريعة الإسلامية"),
+    "Banque Misr's third Mutual fund with cumulative return and periodic distribution": ("BM_THIRD", "صندوق بنك مصر الثالث ذو العائد التراكمي والتوزيع الدوري"),
+    "Banque Misr Mutual Fund in Dollar with a daily cumulative return (day by day Dollar)": ("BM_MM_USD", "صندوق بنك مصر بالدولار ذو العائد اليومي التراكمي (يوم بيوم دولار)"),
+    "Banque Misr Mutual Fund in Euro with a daily cumulative return (day by day Euro)": ("BM_MM_EUR", "صندوق بنك مصر باليورو ذو العائد اليومي التراكمي (يوم بيوم يورو)"),
+    "Misr Capital Investment Fund to invest in debt instruments with periodic returns": ("MISR_CAP_DEBT", "صندوق مصر كابيتال للاستثمار في أدوات الدين ذو العائد الدوري"),
+    "Egyptian Sports Fund": ("EGYPT_SPORT_BM", "الصندوق الرياضي المصري"),
+    "CI Asset Fund with Cumulative Daily Yield - Misr Daily": ("CI_MISR_DAILY", "صندوق سي آي ذو العائد اليومي التراكمي (مصر اليومي)"),
+    "CI Asset Management Investment Fund for Investment in Gold with Daily Cumulative Return - Gold Misr": ("CI_GOLD_MISR", "صندوق سي آي للاستثمار في الذهب ذو العائد اليومي التراكمي (جولد مصر)"),
 }
 
 
@@ -59,11 +59,12 @@ def scrape() -> list[dict]:
                 continue
 
             currency = "USD" if "Dollar" in price_raw else "EUR" if "Euro" in price_raw else "EGP"
+            ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
 
             results.append({
-                "ticker": FUND_MAP.get(name, "UNC"),
+                "ticker": ticker,
                 "name_en": name,
-                "name_ar": None,
+                "name_ar": name_ar,
                 "nav": float(price_match.group(1)),
                 "currency": currency,
                 "date": "N/A",

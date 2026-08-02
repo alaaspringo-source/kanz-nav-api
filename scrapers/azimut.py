@@ -19,30 +19,30 @@ HEADERS = {
 }
 
 FUND_MAP = {
-    "az- جولد": "AZG",
-    "Menthum": "MNT",
-    "az- ادخار": "AZS",
-    "az– ناصر": "AZN",
-    "EBank": "EBANK_MM",
-    "az- حالا": "HALAN",
-    "az-thndr": "THNDR",
-    "az- فرص": "AZO",
-    "az- فرص الشريعة": "AZO_S",
-    "Az-LV": "AZ_LV",
-    "ABC": "ABC",
-    "AZ Equity - Egypt": "AEE_USD",
-    "EBank – El Khabeer": "EBANK_KH",
-    "az- استحقاق T25 EGP": "T25_EGP",
-    "az- استحقاق T25 USD": "T25_USD",
-    "az- استحقاق  T27 USD": "T27_USD",
-    "az–استحقاق  T29 USD": "T29_USD",
-    "az–استحقاق  T30 USD": "T30_USD",
-    "AZ – استحقاق  T33 USD": "T33_USD",
-    "Brassbell": "BRASS",
-    "Ataa Charity Fund": "ATAA",
-    "Maashy": "MAASHY",
-    "Bank Nxt - Sanady": "SANADY",
-    "az- فاليو": "AZ_FALYO",
+    "az- جولد": ("AZG", "أزيموت جولد"),
+    "Menthum": ("MNT", "منثم"),
+    "az- ادخار": ("AZS", "أزيموت ادخار"),
+    "az– ناصر": ("AZN", "أزيموت ناصر"),
+    "EBank": ("EBANK_MM", "إي بنك"),
+    "az- حالا": ("HALAN", "أزيموت حالا"),
+    "az-thndr": ("THNDR", "أزيموت ثندر"),
+    "az- فرص": ("AZO", "أزيموت فرص"),
+    "az- فرص الشريعة": ("AZO_S", "أزيموت فرص الشريعة"),
+    "Az-LV": ("AZ_LV", "أزيموت إل في"),
+    "ABC": ("ABC", "إيه بي سي"),
+    "AZ Equity - Egypt": ("AEE_USD", "أزيموت للأسهم - مصر"),
+    "EBank – El Khabeer": ("EBANK_KH", "إي بنك - الخبير"),
+    "az- استحقاق T25 EGP": ("T25_EGP", "أزيموت استحقاق تي25 جنيه"),
+    "az- استحقاق T25 USD": ("T25_USD", "أزيموت استحقاق تي25 دولار"),
+    "az- استحقاق  T27 USD": ("T27_USD", "أزيموت استحقاق تي27 دولار"),
+    "az–استحقاق  T29 USD": ("T29_USD", "أزيموت استحقاق تي29 دولار"),
+    "az–استحقاق  T30 USD": ("T30_USD", "أزيموت استحقاق تي30 دولار"),
+    "AZ – استحقاق  T33 USD": ("T33_USD", "أزيموت استحقاق تي33 دولار"),
+    "Brassbell": ("BRASS", "براسبيل"),
+    "Ataa Charity Fund": ("ATAA", "صندوق عطاء الخيري"),
+    "Maashy": ("MAASHY", "معاشي"),
+    "Bank Nxt - Sanady": ("SANADY", "بنك نكست - سندي"),
+    "az- فاليو": ("AZ_FALYO", "أزيموت فاليو"),
 }
 
 
@@ -69,10 +69,12 @@ def scrape() -> list[dict]:
             if not name or nav is None:
                 continue
 
+            ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
+
             results.append({
-                "ticker": FUND_MAP.get(name, "UNC"),
+                "ticker": ticker,
                 "name_en": name,
-                "name_ar": None,
+                "name_ar": name_ar,
                 "nav": float(nav),
                 "currency": currency,
                 "date": date,

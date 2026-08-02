@@ -16,13 +16,13 @@ HEADERS = {
 URL = "https://nicapital.com.eg/lines-of-business/asset-management/"
 
 FUND_MAP = {
-    "SIULA MONEY MARKET FUND": "NI_SIULA",
-    "15/30 Fixed Income Fund": "NI_1530",
-    "MAKASEB 1st Tranche": "NI_MAKASEB_1",
-    "MAKASEB 2nd Tranche": "NI_MAKASEB_2",
-    "SAHMY FUND": "NI_SAHMY",
-    "SAHMY 70 FUND": "NI_SAHMY_70",
-    "EDUCATION FOR LIFE": "NI_EDU_LIFE",
+    "SIULA MONEY MARKET FUND": ("NI_SIULA", "صندوق سيولة النقدي"),
+    "15/30 Fixed Income Fund": ("NI_1530", "صندوق 15/30 للدخل الثابت"),
+    "MAKASEB 1st Tranche": ("NI_MAKASEB_1", "صندوق مكاسب الشريحة الأولى"),
+    "MAKASEB 2nd Tranche": ("NI_MAKASEB_2", "صندوق مكاسب الشريحة الثانية"),
+    "SAHMY FUND": ("NI_SAHMY", "صندوق سهمي"),
+    "SAHMY 70 FUND": ("NI_SAHMY_70", "صندوق سهمي 70"),
+    "EDUCATION FOR LIFE": ("NI_EDU_LIFE", "صندوق التعليم من أجل الحياة"),
 }
 
 
@@ -78,10 +78,12 @@ def scrape() -> list[dict]:
             if not name or nav <= 0:
                 continue
 
+            ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
+
             results.append({
-                "ticker": FUND_MAP.get(name, "UNC"),
+                "ticker": ticker,
                 "name_en": name,
-                "name_ar": None,
+                "name_ar": name_ar,
                 "nav": nav,
                 "currency": "EGP",
                 "date": date_val,

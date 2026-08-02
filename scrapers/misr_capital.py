@@ -16,8 +16,8 @@ HEADERS = {
 URL = "https://misrcapital.com/financial-services/asset-management/"
 
 FUND_MAP = {
-    "Banque Misr Second Fund": "MC_BM_2",
-    "Banque Misr Third Fund": "MC_BM_3",
+    "Banque Misr Second Fund": ("MC_BM_2", "صندوق بنك مصر الثاني"),
+    "Banque Misr Third Fund": ("MC_BM_3", "صندوق بنك مصر الثالث"),
 }
 
 
@@ -77,10 +77,12 @@ def scrape() -> list[dict]:
             if nav_value is None or nav_value <= 0:
                 continue
 
+            ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
+
             results.append({
-                "ticker": FUND_MAP.get(name, "UNC"),
+                "ticker": ticker,
                 "name_en": name,
-                "name_ar": None,
+                "name_ar": name_ar,
                 "nav": nav_value,
                 "currency": "EGP",
                 "date": date_val,
