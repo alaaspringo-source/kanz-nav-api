@@ -15,7 +15,6 @@ HEADERS = {
 
 URL = "https://www.hc-si.com/"
 
-# Fund name -> ticker. Names must match exactly as they appear on the site.
 FUND_MAP = {
     "Suez Canal Bank Fund No. 1": "HC_SCB_1",
     "Agricultural Bank of Egypt Fund No. 2 (Al Hasad Al Yaumy)": "HC_ABE_2",
@@ -36,29 +35,27 @@ def scrape() -> list[dict]:
             return []
 
         soup = BeautifulSoup(response.text, "html.parser")
-        text = soup.get_text(separator="\n")
 
-        # Pattern seen: "Fund Name{1982.15}" followed later by a date like
-        # "2026-07-30" (may be same line or the next non-empty line).
-        pattern = re.compile(r"([^\n{}]{5,120})\{([\d.]+)\}")
-        lines = text.split("\n")
-
-        for i, line in enumerate(lines):
-            m = pattern.search(line)
-            if not m:
+        for row in soup.find_all("div", class_="scroll_info"):
+            a = row.find("a")
+            if not a:
                 continue
-            name = m.group(1).strip()
-            nav = float(m.group(2))
+
+            price_span = a.find("span")
+            if not price_span:
+                continue
+            price_match = re.search(r"([\d.]+)", price_span.get_text())
+            if not price_match:
+                continue
+            nav = float(price_match.group(1))
             if nav <= 0:
                 continue
 
-            # Look ahead a few lines for a date pattern.
-            date_val = "N/A"
-            for j in range(i, min(i + 4, len(lines))):
-                dm = re.search(r"\d{4}-\d{2}-\d{2}", lines[j])
-                if dm:
-                    date_val = dm.group(0)
-                    break
+            # Fund name is the anchor's text minus the price span's text.
+            name = a.get_text().replace(price_span.get_text(), "").strip()
+
+            date_span = row.find("span", class_="date")
+            date_val = date_span.get_text(strip=True) if date_span else "N/A"
 
             results.append({
                 "ticker": FUND_MAP.get(name, "UNC"),
