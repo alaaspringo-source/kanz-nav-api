@@ -1,24 +1,13 @@
-import requests
 from bs4 import BeautifulSoup
 import logging
 import re
 
+from scrapers._render import fetch_rendered_html
+
 logger = logging.getLogger(__name__)
 
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
-}
-
-# NOTE: this URL changed from /asset-management to /asset-management-1 —
-# the old slug now 404s ("Business Line not found"). Verify periodically.
 URL = "https://www.beltoneholding.com/en/business-line/asset-management-1"
 
-# AR names are hardcoded (like ci_capital.py) rather than scraping a second
-# AR page, since the AR page structure/slug may drift independently.
 FUND_MAP = {
     'MID Bank Fund 2': ('MID_BANK_2', 'صندوق بنك إم آي دي الثاني'),
     'ABC (Mazaya)': ('ABC_MAZAYA', 'صندوق البنك العربي الأفريقي (مزايا)'),
@@ -56,51 +45,59 @@ SKIP_NAMES = {"fund name", ""}
 
 
 def scrape() -> list[dict]:
-    try:
-        response = requests.get(URL, headers=HEADERS, timeout=20)
-        if response.status_code != 200:
-            logger.error(f"Beltone: HTTP {response.status_code}")
-            return []
-
-        soup = BeautifulSoup(response.text, "html.parser")
-        results = []
-
-        for row in soup.find_all("tr"):
-            cols = row.find_all("td")
-            if len(cols) < 2:
-                continue
-
-            name = cols[0].get_text(strip=True)
-            if not name or name.lower() in SKIP_NAMES:
-                continue
-
-            price_raw = cols[1].get_text(strip=True).replace(",", "")
-            price_match = re.search(r"(\d+\.?\d*)", price_raw)
-            if not price_match:
-                continue
-
-            nav = float(price_match.group(1))
-            if nav <= 0:
-                continue
-
-            currency = "USD" if "USD" in name.upper() else "EGP"
-            ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
-            date_val = cols[3].get_text(strip=True) if len(cols) > 3 else "N/A"
-
-            results.append({
-                "ticker": ticker,
-                "name_en": name,
-                "name_ar": name_ar,
-                "nav": nav,
-                "currency": currency,
-                "date": date_val,
-                "manager": "Beltone",
-                "source": "beltoneholding.com",
-            })
-
-        logger.info(f"Beltone: Scraped {len(results)} funds.")
-        return results
-
-    except Exception as e:
-        logger.error(f"Beltone: Critical error — {e}")
+    html = fetch_rendered_html(URL, wait_ms=8000)
+    if not html:
         return []
+
+    soup = BeautifulSoup(html, "html.parser")
+    results = []
+
+    # Fund name: <p class="min-w-[200px] ...">
+    name_els = soup.find_all("p", class_=lambda c: c and "min-w-[200px]" in c)
+    logger.info(f"Beltone: Found {len(name_els)} fund name elements.")
+
+    for name_el in name_els:
+        name = name_el.get_text(strip=True)
+        if not name or name.lower() in SKIP_NAMES:
+            continue
+
+        # Row container: walk up to the div holding both name and the
+        # price/date/date/ytd group, then find the price cell (w-[144px]).
+        row = name_el.find_parent("div", class_=lambda c: c and "box-border" in c)
+        if not row:
+            continue
+
+        price_el = row.find("p", class_=lambda c: c and "w-[144px]" in c)
+        if not price_el:
+            continue
+
+        price_raw = price_el.get_text(strip=True).replace(",", "")
+        price_match = re.search(r"(\d+\.?\d*)", price_raw)
+        if not price_match:
+            continue
+
+        nav = float(price_match.group(1))
+        if nav <= 0:
+            continue
+
+        # Column order confirmed: price (w-144), inception date (w-126),
+        # last update date (w-104), YTD% (w-104). We want "last update".
+        date_els = row.find_all("p", class_=lambda c: c and "w-[104px]" in c)
+        date_val = date_els[0].get_text(strip=True) if date_els else "N/A"
+
+        currency = "USD" if "USD" in name.upper() else "EGP"
+        ticker, name_ar = FUND_MAP.get(name, ("UNC", None))
+
+        results.append({
+            "ticker": ticker,
+            "name_en": name,
+            "name_ar": name_ar,
+            "nav": nav,
+            "currency": currency,
+            "date": date_val,
+            "manager": "Beltone",
+            "source": "beltoneholding.com",
+        })
+
+    logger.info(f"Beltone: Scraped {len(results)} funds.")
+    return results
