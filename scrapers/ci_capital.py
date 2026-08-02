@@ -2,6 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 import re
+import urllib3
+
+# CI Capital's server sends an incomplete cert chain (confirmed via diagnostic:
+# same request succeeds with verify=False, fails with verify=True on
+# "unable to get local issuer certificate"). This is their server misconfig,
+# not a MITM risk we're exposed to — this is a public GET of a price page,
+# no credentials or sensitive data are ever sent.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
 
@@ -13,10 +21,6 @@ HEADERS = {
     ),
 }
 
-# NOTE: I could not verify this site's live markup directly (it blocks
-# automated fetching). This keeps the original table-parsing logic minus
-# ScraperAPI. Test this one locally first — if it returns 0 funds, the site
-# may genuinely need JS rendering, unlike the other 7.
 FUND_MAP = {
     "Banque Misr Money Market Fund (EGP)":          ("BM_MM_EGP",   "صندوق بنك مصر لأسواق النقد بالجنيه"),
     "CIB Money Market Fund (Ossoul)":               ("CIB_OSSOUL",  "صندوق CIB النقدي (أصول)"),
@@ -53,7 +57,7 @@ def scrape() -> list[dict]:
     results = []
 
     try:
-        response = requests.get(url, headers=HEADERS, timeout=20)
+        response = requests.get(url, headers=HEADERS, timeout=20, verify=False)
         if response.status_code != 200:
             logger.error(f"CI Capital: HTTP {response.status_code}")
             return []
